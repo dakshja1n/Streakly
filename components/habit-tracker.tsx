@@ -7,7 +7,6 @@ import { createEmptyHabit, useHabits } from "@/hooks/use-habits"
 import { useReminders } from "@/hooks/use-reminders"
 import { HabitCard } from "./habit-card"
 import { HabitModal } from "./habit-modal"
-import { DayNoteModal } from "./day-note-modal"
 import { SettingsModal } from "./settings-modal"
 import { ConsistencyOverview } from "./consistency-overview"
 
@@ -18,7 +17,6 @@ export function HabitTracker() {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
   const [habitModalOpen, setHabitModalOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [noteTarget, setNoteTarget] = useState<{ habit: Habit; iso: string } | null>(null)
 
   const sorted = useMemo(() => [...habits].sort((a, b) => a.order - b.order), [habits])
 
@@ -42,9 +40,6 @@ export function HabitTracker() {
     setHabitModalOpen(false)
     setEditingHabit(null)
   }
-
-  // Keep the note modal habit in sync with latest data
-  const noteHabit = noteTarget ? habits.find((h) => h.id === noteTarget.habit.id) ?? null : null
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6">
@@ -97,7 +92,6 @@ export function HabitTracker() {
                 isFirst={i === 0}
                 isLast={i === sorted.length - 1}
                 onEdit={openEdit}
-                onDayClick={(h, iso) => setNoteTarget({ habit: h, iso })}
               />
             ))}
           </div>
@@ -112,13 +106,6 @@ export function HabitTracker() {
         }}
         onSave={handleSave}
         initial={editingHabit}
-      />
-
-      <DayNoteModal
-        open={Boolean(noteTarget)}
-        onClose={() => setNoteTarget(null)}
-        habit={noteHabit}
-        iso={noteTarget?.iso ?? null}
       />
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
