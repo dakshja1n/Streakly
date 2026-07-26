@@ -42,7 +42,7 @@ export function HabitTracker() {
   }
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-5xl px-4 pb-24 pt-6 sm:px-6">
+    <div className="mx-auto min-h-screen w-full max-w-6xl px-3 pb-24 pt-6 sm:px-6">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
@@ -74,8 +74,8 @@ export function HabitTracker() {
       </header>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {[0, 1].map((i) => (
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
             <div key={i} className="h-72 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40" />
           ))}
         </div>
@@ -84,7 +84,7 @@ export function HabitTracker() {
       ) : (
         <div className="flex flex-col gap-6">
           <ConsistencyOverview habits={sorted} />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
             {sorted.map((habit, i) => (
               <HabitCard
                 key={habit.id}
