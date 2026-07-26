@@ -76,85 +76,85 @@ export function HabitCard({ habit, isFirst, isLast, onEdit }: HabitCardProps) {
 
   return (
     <article
-      className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 shadow-lg shadow-black/20"
+      className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2.5 sm:p-3 shadow-lg shadow-black/20"
       style={{ borderTopColor: accent, borderTopWidth: 2 }}
     >
-      <header className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3">
+      <header className="mb-2 flex items-start justify-between gap-1">
+        <div className="flex items-center gap-2 min-w-0">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base"
             style={{ backgroundColor: `${accent}22`, border: `1px solid ${accent}55` }}
             aria-hidden="true"
           >
             {habit.emoji}
           </div>
-          <div>
-            <h3 className="text-balance font-semibold leading-tight text-zinc-100">{habit.name}</h3>
-            <p className="text-xs text-zinc-500">{frequencyLabel}</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-xs sm:text-sm font-semibold leading-tight text-zinc-100">{habit.name}</h3>
+            <p className="truncate text-[10px] sm:text-xs text-zinc-500">{frequencyLabel}</p>
           </div>
         </div>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
             onClick={() => reorderHabit(habit.id, "up")}
             disabled={isFirst}
             aria-label="Move habit up"
-            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent"
           >
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => reorderHabit(habit.id, "down")}
             disabled={isLast}
             aria-label="Move habit down"
-            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent"
           >
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onEdit(habit)}
             aria-label="Edit habit"
-            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+            className="rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={handleDelete}
             aria-label="Delete habit"
-            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-red-400"
+            className="rounded p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-red-400"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </header>
 
-      <div className="mb-3 flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <Flame className="h-4 w-4" style={{ color: accent }} />
-          <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.currentStreak}</span>
-          <span className="text-xs text-zinc-500">streak</span>
+      <div className="mb-2 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1">
+          <Flame className="h-3.5 w-3.5" style={{ color: accent }} />
+          <span className="font-semibold tabular-nums text-zinc-100">{stats.currentStreak}</span>
+          <span className="text-[10px] text-zinc-500 sm:text-xs">streak</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.totalCount}</span>
-          <span className="text-xs text-zinc-500">total</span>
+        <div className="flex items-center gap-1">
+          <span className="font-semibold tabular-nums text-zinc-100">{stats.totalCount}</span>
+          <span className="text-[10px] text-zinc-500 sm:text-xs">total</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.bestStreak}</span>
-          <span className="text-xs text-zinc-500">best</span>
+        <div className="flex items-center gap-1">
+          <span className="font-semibold tabular-nums text-zinc-100">{stats.bestStreak}</span>
+          <span className="text-[10px] text-zinc-500 sm:text-xs">best</span>
         </div>
       </div>
 
-      <div className="mb-3">
+      <div className="mb-2">
         <StreakBadges bestStreak={stats.bestStreak} />
       </div>
 
       <button
         type="button"
         onClick={handleComplete}
-        className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-[0.98]"
+        className="mb-3 flex w-full items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-[0.98]"
         style={
           doneToday
             ? { backgroundColor: accent, color: "#09090b" }
@@ -162,28 +162,28 @@ export function HabitCard({ habit, isFirst, isLast, onEdit }: HabitCardProps) {
         }
         aria-pressed={doneToday}
       >
-        <Check className="h-4 w-4" />
+        <Check className="h-3.5 w-3.5" />
         {doneToday ? "Completed Today" : "Complete Today"}
       </button>
 
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-400">{monthLabel(viewYear, viewMonth)}</span>
-        <div className="flex items-center gap-1">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-[10px] sm:text-xs font-medium text-zinc-400">{monthLabel(viewYear, viewMonth)}</span>
+        <div className="flex items-center gap-0.5">
           <button
             type="button"
             onClick={() => shiftMonth(-1)}
             aria-label="Previous month"
-            className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+            className="rounded p-0.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => shiftMonth(1)}
             aria-label="Next month"
-            className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+            className="rounded p-0.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
