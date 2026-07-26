@@ -31,10 +31,9 @@ interface HabitCardProps {
   isFirst: boolean
   isLast: boolean
   onEdit: (habit: Habit) => void
-  onDayClick: (habit: Habit, iso: string) => void
 }
 
-export function HabitCard({ habit, isFirst, isLast, onEdit, onDayClick }: HabitCardProps) {
+export function HabitCard({ habit, isFirst, isLast, onEdit }: HabitCardProps) {
   const { toggleCompletion, deleteHabit, reorderHabit } = useHabits()
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
@@ -193,7 +192,7 @@ export function HabitCard({ habit, isFirst, isLast, onEdit, onDayClick }: HabitC
         habit={habit}
         year={viewYear}
         month={viewMonth}
-        onDayClick={(iso) => onDayClick(habit, iso)}
+        onDayClick={(iso) => toggleCompletion(habit.id, iso)}
       />
     </article>
   )
