@@ -1,136 +1,166 @@
-"use client"
+
+  "use client"
 
   import { useMemo, useState } from "react"
-  import { Plus, Settings, Sparkles } from "lucide-react"
+  import {
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    ChevronUp,
+    ChevronDown,
+    Flame,
+    Pencil,
+    Trash2,
+  } from "lucide-react"
   import type { Habit } from "@/lib/types"
-  import { createEmptyHabit, useHabits } from "@/hooks/use-habits"
-  import { useReminders } from "@/hooks/use-reminders"
-  import { HabitCard } from "./habit-card"
-  import { HabitModal } from "./habit-modal"
-  import { SettingsModal } from "./settings-modal"
-  import { ConsistencyOverview } from "./consistency-overview"
+  import { getColorHex } from "@/lib/colors"
+  import { computeStats, monthLabel, todayISO } from "@/lib/habit-utils"
+  import { useHabits } from "@/hooks/use-habits"
+  import { haptic } from "@/lib/haptics"
+  import { MonthlyHeatmap } from "./monthly-heatmap"
+  import { StreakBadges } from "./streak-badges"
 
-  export function HabitTracker() {
-    const { habits, loading, addHabit, updateHabit } = useHabits()
-    useReminders(habits)
+  const FREQUENCY_LABELS: Record<string, string> = {
+    daily: "Every day",
+    weekdays: "Weekdays",
+    weekends: "Weekends",
+    custom: "Weekly target",
+  }
 
-    const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
-    const [habitModalOpen, setHabitModalOpen] = useState(false)
-    const [settingsOpen, setSettingsOpen] = useState(false)
+  interface HabitCardProps {
+    habit: Habit
+    isFirst: boolean
+    isLast: boolean
+    onEdit: (habit: Habit) => void
+  }
 
-    const sorted = useMemo(() => [...habits].sort((a, b) => a.order - b.order), [habits])
+  export function HabitCard({ habit, isFirst, isLast, onEdit }: HabitCardProps) {
+    const { toggleCompletion, deleteHabit, reorderHabit } = useHabits()
+    const now = new Date()
+    const [viewYear, setViewYear] = useState(now.getFullYear())
+    const [viewMonth, setViewMonth] = useState(now.getMonth())
 
-    function openNew() {
-      setEditingHabit(createEmptyHabit(habits.length))
-      setHabitModalOpen(true)
+    const accent = getColorHex(habit.color)
+    const stats = useMemo(() => computeStats(habit), [habit])
+    const today = todayISO()
+    const doneToday = Boolean(habit.completions[today])
+
+    const frequencyLabel =
+      habit.schedule.type === "custom"
+        ? `${habit.schedule.timesPerWeek ?? 3}x per week`
+        : FREQUENCY_LABELS[habit.schedule.type]
+
+    function shiftMonth(delta: number) {
+      let m = viewMonth + delta
+      let y = viewYear
+      if (m < 0) { m = 11; y -= 1 }
+      else if (m > 11) { m = 0; y += 1 }
+      setViewMonth(m)
+      setViewYear(y)
     }
 
-    function openEdit(habit: Habit) {
-      setEditingHabit(habit)
-      setHabitModalOpen(true)
+    function handleComplete() {
+      haptic(20)
+      toggleCompletion(habit.id, today)
     }
 
-    function handleSave(habit: Habit) {
-      const exists = habits.some((h) => h.id === habit.id)
-      if (exists) {
-        updateHabit(habit)
-      } else {
-        addHabit(habit)
+    function handleDelete() {
+      if (window.confirm(`Delete "${habit.name}"? This cannot be undone.`)) {
+        deleteHabit(habit.id)
       }
-      setHabitModalOpen(false)
-      setEditingHabit(null)
     }
-
+  
     return (
-      <div className="mx-auto min-h-screen w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6">
-        <header className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
-              <Sparkles className="h-5 w-5" />
+      <article
+        className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 shadow-lg shadow-black/20"
+        style={{ borderTopColor: accent, borderTopWidth: 2 }}
+      >
+        <header className="mb-3 flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl"
+              style={{ backgroundColor: `${accent}22`, border: `1px solid ${accent}55` }}
+              aria-hidden="true"
+            >
+              {habit.emoji}
             </div>
             <div>
-              <h1 className="text-lg font-bold leading-tight text-zinc-100">HabitKit</h1>
-              <p className="text-xs text-zinc-500">Build better routines</p>
+              <h3 className="text-balance font-semibold leading-tight text-zinc-100">{habit.name}</h3>
+              <p className="text-xs text-zinc-500">{frequencyLabel}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSettingsOpen(true)}
-              aria-label="Open settings"
-              className="rounded-lg border border-zinc-800 p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-            >
-              <Settings className="h-5 w-5" />
+          <div className="flex items-center gap-0.5">
+            <button type="button" onClick={() => reorderHabit(habit.id, "up")} disabled={isFirst}
+              aria-label="Move habit up"
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent">
+              <ChevronUp className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={openNew}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-emerald-400"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Habit</span>
+            <button type="button" onClick={() => reorderHabit(habit.id, "down")} disabled={isLast}
+              aria-label="Move habit down"
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-30 disabled:hover:bg-transparent">
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => onEdit(habit)} aria-label="Edit habit"
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200">
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={handleDelete} aria-label="Delete habit"
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-red-400">
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
         </header>
 
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-72 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40" />
-            ))}
+        <div className="mb-3 flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <Flame className="h-4 w-4" style={{ color: accent }} />
+            <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.currentStreak}</span>
+            <span className="text-xs text-zinc-500">streak</span>
           </div>
-        ) : sorted.length === 0 ? (
-          <EmptyState onCreate={openNew} />
-        ) : (
-          <div className="flex flex-col gap-6">
-            <ConsistencyOverview habits={sorted} />
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-              {sorted.map((habit, i) => (
-                <HabitCard
-                  key={habit.id}
-                  habit={habit}
-                  isFirst={i === 0}
-                  isLast={i === sorted.length - 1}
-                  onEdit={openEdit}
-                />
-              ))}
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.totalCount}</span>
+            <span className="text-xs text-zinc-500">total</span>
           </div>
-        )}
-
-        <HabitModal
-          open={habitModalOpen}
-          onClose={() => {
-            setHabitModalOpen(false)
-            setEditingHabit(null)
-          }}
-          onSave={handleSave}
-          initial={editingHabit}
-        />
-
-        <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      </div>
-    )
-  }
-  
-  function EmptyState({ onCreate }: { onCreate: () => void }) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 px-6 py-20 text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400">
-          <Sparkles className="h-7 w-7" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-semibold tabular-nums text-zinc-100">{stats.bestStreak}</span>
+            <span className="text-xs text-zinc-500">best</span>
+          </div>
         </div>
-        <h2 className="mb-1 text-lg font-semibold text-zinc-100">Start your first habit</h2>
-        <p className="mb-6 max-w-xs text-pretty text-sm text-zinc-500">
-          Track daily routines, build streaks, and watch your consistency grow over time.
-        </p>
+
+        <div className="mb-3">
+          <StreakBadges bestStreak={stats.bestStreak} />
+        </div>
+
         <button
           type="button"
-          onClick={onCreate}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition-colors hover:bg-emerald-400"
+          onClick={handleComplete}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-[0.98]"
+          style={
+            doneToday
+              ? { backgroundColor: accent, color: "#09090b" }
+              : { backgroundColor: "#27272a", color: "#e4e4e7", border: `1px solid ${accent}55` }
+          }
+          aria-pressed={doneToday}
         >
-          <Plus className="h-4 w-4" />
-          Create a habit
+          <Check className="h-4 w-4" />
+          {doneToday ? "Completed Today" : "Complete Today"}
         </button>
-      </div>
+
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-400">{monthLabel(viewYear, viewMonth)}</span>
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month"
+              className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month"
+              className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200">
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <MonthlyHeatmap habit={habit} year={viewYear} month={viewMonth} />
+      </article>
     )
   }
